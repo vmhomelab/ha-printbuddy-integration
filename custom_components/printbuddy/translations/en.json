@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Printbuddy",
+        "description": "Connect Home Assistant to your Printbuddy instance.",
+        "data": {
+          "url": "Printbuddy URL",
+          "token": "API token",
+          "scan_interval": "Scan interval in seconds"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Printbuddy. Check the URL and network path from Home Assistant.",
+      "invalid_auth": "Printbuddy rejected the supplied token.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Printbuddy instance is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Printbuddy options",
+        "data": {
+          "scan_interval": "Scan interval in seconds"
+        }
+      }
+    }
+  }
+}

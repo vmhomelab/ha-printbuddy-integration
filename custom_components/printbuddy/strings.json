@@ -1,0 +1,62 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Printbuddy",
+        "description": "Connect Home Assistant to your Printbuddy instance.",
+        "data": {
+          "url": "Printbuddy URL",
+          "token": "API token",
+          "scan_interval": "Scan interval in seconds"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Printbuddy. Check the URL and network path from Home Assistant.",
+      "invalid_auth": "Printbuddy rejected the supplied token.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Printbuddy instance is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Printbuddy options",
+        "data": {
+          "scan_interval": "Scan interval in seconds"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "current_print": { "name": "Current print" },
+      "nozzle_temperature": { "name": "Nozzle temperature" },
+      "nozzle_target_temperature": { "name": "Nozzle target temperature" },
+      "right_nozzle_temperature": { "name": "Right nozzle temperature" },
+      "bed_temperature": { "name": "Bed temperature" },
+      "bed_target_temperature": { "name": "Bed target temperature" },
+      "chamber_temperature": { "name": "Chamber temperature" },
+      "progress": { "name": "Progress" },
+      "remaining_time": { "name": "Remaining time" },
+      "current_layer": { "name": "Current layer" },
+      "total_layers": { "name": "Total layers" },
+      "wifi_signal": { "name": "Wi-Fi signal" },
+      "cooling_fan_speed": { "name": "Part cooling fan" },
+      "auxiliary_fan_speed": { "name": "Auxiliary fan" },
+      "chamber_fan_speed": { "name": "Chamber fan" },
+      "heatbreak_fan_speed": { "name": "Heatbreak fan" }
+    },
+    "binary_sensor": {
+      "connected": { "name": "Connected" },
+      "door_open": { "name": "Door open" },
+      "chamber_light": { "name": "Chamber light" },
+      "sdcard": { "name": "SD card" },
+      "timelapse": { "name": "Timelapse" },
+      "awaiting_plate_clear": { "name": "Awaiting plate clear" }
+    }
+  }
+}
