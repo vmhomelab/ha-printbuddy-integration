@@ -1,5 +1,9 @@
 # Printbuddy Home Assistant Integration
 
+<p align="center">
+  <img src="logo.png" alt="Printbuddy" width="180">
+</p>
+
 Custom Home Assistant integration for [Printbuddy](https://github.com/vmhomelab/Printbuddy).
 
 It connects to a Printbuddy instance and exposes every configured Printbuddy printer as its own Home Assistant device with status, temperature, progress, fan, network, and print-job sensors.
