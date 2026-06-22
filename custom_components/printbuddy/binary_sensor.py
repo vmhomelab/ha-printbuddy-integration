@@ -18,6 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .coordinator import PrintbuddyCoordinator
 from .entity import PrintbuddyEntity
+from .entity_availability import is_binary_sensor_supported
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -25,7 +26,7 @@ class PrintbuddyBinarySensorDescription(BinarySensorEntityDescription):
     """Description for a Printbuddy binary sensor."""
 
     value_fn: Callable[[dict[str, Any]], bool]
-    exists_fn: Callable[[dict[str, Any]], bool] = lambda status: True
+    exists_fn: Callable[[dict[str, Any], Any | None], bool] = lambda status, _printer=None: True
 
 
 BINARY_SENSOR_DESCRIPTIONS: tuple[PrintbuddyBinarySensorDescription, ...] = (
@@ -40,35 +41,35 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[PrintbuddyBinarySensorDescription, ...] = (
         translation_key="door_open",
         device_class=BinarySensorDeviceClass.DOOR,
         value_fn=lambda status: bool(status.get("door_open")),
-        exists_fn=lambda status: status.get("door_open") is not None,
+        exists_fn=lambda status, printer=None: is_binary_sensor_supported("door_open", status, printer),
     ),
     PrintbuddyBinarySensorDescription(
         key="chamber_light",
         translation_key="chamber_light",
         device_class=BinarySensorDeviceClass.LIGHT,
         value_fn=lambda status: bool(status.get("chamber_light")),
-        exists_fn=lambda status: status.get("chamber_light") is not None,
+        exists_fn=lambda status, printer=None: is_binary_sensor_supported("chamber_light", status, printer),
     ),
     PrintbuddyBinarySensorDescription(
         key="sdcard",
         translation_key="sdcard",
         icon="mdi:sd",
         value_fn=lambda status: bool(status.get("sdcard")),
-        exists_fn=lambda status: status.get("sdcard") is not None,
+        exists_fn=lambda status, printer=None: is_binary_sensor_supported("sdcard", status, printer),
     ),
     PrintbuddyBinarySensorDescription(
         key="timelapse",
         translation_key="timelapse",
         icon="mdi:camera-timer",
         value_fn=lambda status: bool(status.get("timelapse")),
-        exists_fn=lambda status: status.get("timelapse") is not None,
+        exists_fn=lambda status, printer=None: is_binary_sensor_supported("timelapse", status, printer),
     ),
     PrintbuddyBinarySensorDescription(
         key="awaiting_plate_clear",
         translation_key="awaiting_plate_clear",
         icon="mdi:clipboard-alert-outline",
         value_fn=lambda status: bool(status.get("awaiting_plate_clear")),
-        exists_fn=lambda status: status.get("awaiting_plate_clear") is not None,
+        exists_fn=lambda status, printer=None: is_binary_sensor_supported("awaiting_plate_clear", status, printer),
     ),
 )
 
@@ -80,11 +81,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     def add_entities_for_known_printers() -> None:
         entities: list[PrintbuddyBinarySensor] = []
+        printers = coordinator.data.get("printers", {})
         for printer_id, status in coordinator.data.get("statuses", {}).items():
             raw = status.raw
+            printer = printers.get(printer_id)
             for description in BINARY_SENSOR_DESCRIPTIONS:
                 entity_id = (printer_id, description.key)
-                if entity_id in known_entities or not description.exists_fn(raw):
+                if entity_id in known_entities or not description.exists_fn(raw, printer):
                     continue
                 known_entities.add(entity_id)
                 entities.append(PrintbuddyBinarySensor(coordinator, printer_id, description))

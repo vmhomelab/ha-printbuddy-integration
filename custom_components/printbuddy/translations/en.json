@@ -29,5 +29,91 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "current_print": {
+        "name": "Current print"
+      },
+      "nozzle_temperature": {
+        "name": "Nozzle current temperature"
+      },
+      "nozzle_target_temperature": {
+        "name": "Nozzle target temperature"
+      },
+      "right_nozzle_temperature": {
+        "name": "Right nozzle current temperature"
+      },
+      "right_nozzle_target_temperature": {
+        "name": "Right nozzle target temperature"
+      },
+      "bed_temperature": {
+        "name": "Bed current temperature"
+      },
+      "bed_target_temperature": {
+        "name": "Bed target temperature"
+      },
+      "chamber_temperature": {
+        "name": "Chamber current temperature"
+      },
+      "chamber_target_temperature": {
+        "name": "Chamber target temperature"
+      },
+      "progress": {
+        "name": "Progress"
+      },
+      "remaining_time": {
+        "name": "Remaining time"
+      },
+      "current_layer": {
+        "name": "Current layer"
+      },
+      "total_layers": {
+        "name": "Total layers"
+      },
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      },
+      "cooling_fan_speed": {
+        "name": "Part cooling fan"
+      },
+      "auxiliary_fan_speed": {
+        "name": "Auxiliary fan"
+      },
+      "chamber_fan_speed": {
+        "name": "Chamber fan"
+      },
+      "heatbreak_fan_speed": {
+        "name": "Heatbreak fan"
+      }
+    },
+    "binary_sensor": {
+      "connected": {
+        "name": "Connected"
+      },
+      "door_open": {
+        "name": "Door open"
+      },
+      "chamber_light": {
+        "name": "Chamber light"
+      },
+      "sdcard": {
+        "name": "SD card"
+      },
+      "timelapse": {
+        "name": "Timelapse"
+      },
+      "awaiting_plate_clear": {
+        "name": "Awaiting plate clear"
+      }
+    },
+    "camera": {
+      "camera": {
+        "name": "Camera"
+      }
+    }
   }
 }

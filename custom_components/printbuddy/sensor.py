@@ -15,31 +15,23 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .coordinator import PrintbuddyCoordinator
 from .entity import PrintbuddyEntity
+from .entity_availability import get_temperature_value, has_temperature
 
 
-def _temperature_value(*keys: str) -> Callable[[dict[str, Any]], Any | None]:
-    def value(status: dict[str, Any]) -> Any | None:
-        temperatures = status.get("temperatures") or {}
-        for key in keys:
-            if key in temperatures:
-                return temperatures.get(key)
-            if key in status:
-                return status.get(key)
-        return None
+def _temperature_sensor_value(sensor_key: str) -> Callable[[dict[str, Any]], Any | None]:
+    return lambda status: get_temperature_value(status, sensor_key)
 
-    return value
+
+def _temperature_sensor_exists(sensor_key: str) -> Callable[[dict[str, Any], Any | None], bool]:
+    return lambda status, _printer=None: has_temperature(status, sensor_key)
 
 
 def _raw_value(key: str) -> Callable[[dict[str, Any]], Any | None]:
     return lambda status: status.get(key)
 
 
-def _temperature_exists(*keys: str) -> Callable[[dict[str, Any]], bool]:
-    return lambda status: any(key in (status.get("temperatures") or {}) or key in status for key in keys)
-
-
-def _raw_exists(key: str) -> Callable[[dict[str, Any]], bool]:
-    return lambda status: status.get(key) is not None
+def _raw_exists(key: str) -> Callable[[dict[str, Any], Any | None], bool]:
+    return lambda status, _printer=None: status.get(key) is not None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -47,7 +39,7 @@ class PrintbuddySensorDescription(SensorEntityDescription):
     """Description for a Printbuddy sensor."""
 
     value_fn: Callable[[dict[str, Any]], Any | None]
-    exists_fn: Callable[[dict[str, Any]], bool] = lambda status: True
+    exists_fn: Callable[[dict[str, Any], Any | None], bool] = lambda status, _printer=None: True
     attributes_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
 
@@ -76,7 +68,9 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         translation_key="current_print",
         icon="mdi:file-document-outline",
         value_fn=lambda status: status.get("current_print") or status.get("subtask_name") or status.get("gcode_file"),
-        exists_fn=lambda status: any(status.get(k) for k in ("current_print", "subtask_name", "gcode_file")),
+        exists_fn=lambda status, _printer=None: any(
+            status.get(k) for k in ("current_print", "subtask_name", "gcode_file")
+        ),
     ),
     PrintbuddySensorDescription(
         key="nozzle_temperature",
@@ -84,8 +78,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("nozzle", "nozzle_temperature", "nozzle_temp"),
-        exists_fn=_temperature_exists("nozzle", "nozzle_temperature", "nozzle_temp"),
+        value_fn=_temperature_sensor_value("nozzle_temperature"),
+        exists_fn=_temperature_sensor_exists("nozzle_temperature"),
     ),
     PrintbuddySensorDescription(
         key="nozzle_target_temperature",
@@ -93,8 +87,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("nozzle_target"),
-        exists_fn=_temperature_exists("nozzle_target"),
+        value_fn=_temperature_sensor_value("nozzle_target_temperature"),
+        exists_fn=_temperature_sensor_exists("nozzle_target_temperature"),
     ),
     PrintbuddySensorDescription(
         key="right_nozzle_temperature",
@@ -102,8 +96,17 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("nozzle_2"),
-        exists_fn=_temperature_exists("nozzle_2"),
+        value_fn=_temperature_sensor_value("right_nozzle_temperature"),
+        exists_fn=_temperature_sensor_exists("right_nozzle_temperature"),
+    ),
+    PrintbuddySensorDescription(
+        key="right_nozzle_target_temperature",
+        translation_key="right_nozzle_target_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_temperature_sensor_value("right_nozzle_target_temperature"),
+        exists_fn=_temperature_sensor_exists("right_nozzle_target_temperature"),
     ),
     PrintbuddySensorDescription(
         key="bed_temperature",
@@ -111,8 +114,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("bed", "bed_temperature", "bed_temp"),
-        exists_fn=_temperature_exists("bed", "bed_temperature", "bed_temp"),
+        value_fn=_temperature_sensor_value("bed_temperature"),
+        exists_fn=_temperature_sensor_exists("bed_temperature"),
     ),
     PrintbuddySensorDescription(
         key="bed_target_temperature",
@@ -120,8 +123,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("bed_target"),
-        exists_fn=_temperature_exists("bed_target"),
+        value_fn=_temperature_sensor_value("bed_target_temperature"),
+        exists_fn=_temperature_sensor_exists("bed_target_temperature"),
     ),
     PrintbuddySensorDescription(
         key="chamber_temperature",
@@ -129,8 +132,17 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("chamber", "chamber_temperature", "chamber_temp"),
-        exists_fn=_temperature_exists("chamber", "chamber_temperature", "chamber_temp"),
+        value_fn=_temperature_sensor_value("chamber_temperature"),
+        exists_fn=_temperature_sensor_exists("chamber_temperature"),
+    ),
+    PrintbuddySensorDescription(
+        key="chamber_target_temperature",
+        translation_key="chamber_target_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_temperature_sensor_value("chamber_target_temperature"),
+        exists_fn=_temperature_sensor_exists("chamber_target_temperature"),
     ),
     PrintbuddySensorDescription(
         key="progress",
@@ -220,11 +232,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     def add_entities_for_known_printers() -> None:
         entities: list[PrintbuddySensor] = []
+        printers = coordinator.data.get("printers", {})
         for printer_id, status in coordinator.data.get("statuses", {}).items():
             raw = status.raw
+            printer = printers.get(printer_id)
             for description in SENSOR_DESCRIPTIONS:
                 entity_id = (printer_id, description.key)
-                if entity_id in known_entities or not description.exists_fn(raw):
+                if entity_id in known_entities or not description.exists_fn(raw, printer):
                     continue
                 known_entities.add(entity_id)
                 entities.append(PrintbuddySensor(coordinator, printer_id, description))
@@ -253,7 +267,7 @@ class PrintbuddySensor(PrintbuddyEntity, SensorEntity):
     @property
     def native_value(self) -> Any | None:
         """Return the current sensor value."""
-        if not self.entity_description.exists_fn(self.status):
+        if not self.entity_description.exists_fn(self.status, self.printer):
             return None
         return self.entity_description.value_fn(self.status)
 

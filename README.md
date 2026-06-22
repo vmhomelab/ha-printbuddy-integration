@@ -23,8 +23,8 @@ It connects to a Printbuddy instance and exposes every configured Printbuddy pri
 For each printer the integration can create:
 
 - Connection binary sensor
-- Door open binary sensor
-- Chamber light binary sensor
+- Door open binary sensor, when the printer/provider reports a real door capability
+- Chamber light binary sensor, when supported
 - Printing status sensor
 - Current print sensor
 - Nozzle temperature sensor
