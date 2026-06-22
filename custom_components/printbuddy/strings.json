@@ -57,6 +57,9 @@
       "sdcard": { "name": "SD card" },
       "timelapse": { "name": "Timelapse" },
       "awaiting_plate_clear": { "name": "Awaiting plate clear" }
+    },
+    "camera": {
+      "camera": { "name": "Camera" }
     }
   }
 }

@@ -14,7 +14,7 @@ DEFAULT_SCAN_INTERVAL = 30
 MIN_SCAN_INTERVAL = 10
 DEFAULT_TIMEOUT = 15
 
-PLATFORMS = ["sensor", "binary_sensor"]
+PLATFORMS = ["sensor", "binary_sensor", "camera"]
 
 ATTRIBUTION = "Data provided by Printbuddy"
 

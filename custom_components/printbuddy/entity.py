@@ -69,6 +69,9 @@ class PrintbuddyEntity(CoordinatorEntity[PrintbuddyCoordinator]):
                     "ip_address": printer.ip_address,
                     "location": printer.location,
                     "is_active": printer.is_active,
+                    "external_camera_enabled": printer.external_camera_enabled,
+                    "external_camera_type": printer.external_camera_type,
+                    "native_camera_enabled": printer.native_camera_enabled,
                 }
             )
         return attrs

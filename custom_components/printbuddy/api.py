@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Self
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
@@ -39,6 +39,10 @@ class PrintbuddyPrinter:
     ip_address: str | None = None
     location: str | None = None
     is_active: bool = True
+    external_camera_enabled: bool = False
+    external_camera_url: str | None = None
+    external_camera_type: str | None = None
+    native_camera_enabled: bool = False
 
     @classmethod
     def from_api(cls, payload: dict[str, Any]) -> Self:
@@ -52,7 +56,16 @@ class PrintbuddyPrinter:
             ip_address=payload.get("ip_address"),
             location=payload.get("location"),
             is_active=bool(payload.get("is_active", True)),
+            external_camera_enabled=bool(payload.get("external_camera_enabled", False)),
+            external_camera_url=payload.get("external_camera_url"),
+            external_camera_type=payload.get("external_camera_type"),
+            native_camera_enabled=bool(payload.get("ipcam", False)),
         )
+
+    @property
+    def has_camera(self) -> bool:
+        """Return whether Printbuddy can expose a camera stream for this printer."""
+        return self.native_camera_enabled or (self.external_camera_enabled and bool(self.external_camera_url))
 
 
 @dataclass(slots=True)
@@ -115,12 +128,13 @@ class PrintbuddyClient:
             headers["Authorization"] = f"Bearer {self._token}"
         return headers
 
-    async def _request(self, path: str) -> Any:
+    async def _request(self, path: str, *, method: str = "GET") -> Any:
         try:
-            async with self._session.get(
+            async with self._session.request(
+                method,
                 self._url(path),
                 headers=self._headers(),
-                timeout=self._timeout,
+                timeout=float(self._timeout),
             ) as response:
                 if response.status in (401, 403):
                     raise PrintbuddyAuthError("Printbuddy authentication failed")
@@ -152,6 +166,48 @@ class PrintbuddyClient:
         if not isinstance(payload, dict):
             raise PrintbuddyApiError("Printbuddy status endpoint did not return an object")
         return PrintbuddyStatus.from_api(payload)
+
+    async def async_create_camera_stream_token(self) -> str:
+        """Create a Printbuddy camera stream token for image/stream URLs."""
+        payload = await self._request("/api/v1/printers/camera/stream-token", method="POST")
+        if not isinstance(payload, dict) or not isinstance(payload.get("token"), str) or not payload["token"]:
+            raise PrintbuddyApiError("Printbuddy camera stream token endpoint did not return a token")
+        return payload["token"]
+
+    def camera_stream_url(self, printer_id: int, token: str, *, fps: int | None = None) -> str:
+        """Return a tokenized Printbuddy MJPEG camera stream URL."""
+        query_params: dict[str, str | int] = {"token": token}
+        if fps is not None:
+            query_params["fps"] = fps
+        query = urlencode(query_params)
+        return f"{self._url(f'/api/v1/printers/{printer_id}/camera/stream')}?{query}"
+
+    def camera_snapshot_url(self, printer_id: int, token: str) -> str:
+        """Return a tokenized Printbuddy camera snapshot URL."""
+        query = urlencode({"token": token})
+        return f"{self._url(f'/api/v1/printers/{printer_id}/camera/snapshot')}?{query}"
+
+    async def async_get_camera_snapshot(self, printer_id: int) -> bytes:
+        """Fetch one JPEG snapshot through Printbuddy's camera endpoint."""
+        token = await self.async_create_camera_stream_token()
+        try:
+            async with self._session.get(
+                self.camera_snapshot_url(printer_id, token),
+                headers=self._headers(),
+                timeout=float(self._timeout),
+            ) as response:
+                if response.status in (401, 403):
+                    raise PrintbuddyAuthError("Printbuddy authentication failed")
+                response.raise_for_status()
+                return await response.read()
+        except PrintbuddyAuthError:
+            raise
+        except ClientResponseError as err:
+            raise PrintbuddyApiError(f"Printbuddy API returned HTTP {err.status}") from err
+        except ClientError as err:
+            raise PrintbuddyConnectionError("Could not connect to Printbuddy") from err
+        except TimeoutError as err:
+            raise PrintbuddyConnectionError("Timed out connecting to Printbuddy") from err
 
     async def async_get_all_statuses(self) -> dict[int, PrintbuddyStatus]:
         """Return all configured printers with their status payloads."""
