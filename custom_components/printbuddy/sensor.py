@@ -17,10 +17,15 @@ from .coordinator import PrintbuddyCoordinator
 from .entity import PrintbuddyEntity
 
 
-def _temperature_value(key: str) -> Callable[[dict[str, Any]], Any | None]:
+def _temperature_value(*keys: str) -> Callable[[dict[str, Any]], Any | None]:
     def value(status: dict[str, Any]) -> Any | None:
         temperatures = status.get("temperatures") or {}
-        return temperatures.get(key)
+        for key in keys:
+            if key in temperatures:
+                return temperatures.get(key)
+            if key in status:
+                return status.get(key)
+        return None
 
     return value
 
@@ -29,8 +34,8 @@ def _raw_value(key: str) -> Callable[[dict[str, Any]], Any | None]:
     return lambda status: status.get(key)
 
 
-def _temperature_exists(key: str) -> Callable[[dict[str, Any]], bool]:
-    return lambda status: key in (status.get("temperatures") or {})
+def _temperature_exists(*keys: str) -> Callable[[dict[str, Any]], bool]:
+    return lambda status: any(key in (status.get("temperatures") or {}) or key in status for key in keys)
 
 
 def _raw_exists(key: str) -> Callable[[dict[str, Any]], bool]:
@@ -79,8 +84,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("nozzle"),
-        exists_fn=_temperature_exists("nozzle"),
+        value_fn=_temperature_value("nozzle", "nozzle_temperature", "nozzle_temp"),
+        exists_fn=_temperature_exists("nozzle", "nozzle_temperature", "nozzle_temp"),
     ),
     PrintbuddySensorDescription(
         key="nozzle_target_temperature",
@@ -106,8 +111,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("bed"),
-        exists_fn=_temperature_exists("bed"),
+        value_fn=_temperature_value("bed", "bed_temperature", "bed_temp"),
+        exists_fn=_temperature_exists("bed", "bed_temperature", "bed_temp"),
     ),
     PrintbuddySensorDescription(
         key="bed_target_temperature",
@@ -124,8 +129,8 @@ SENSOR_DESCRIPTIONS: tuple[PrintbuddySensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_temperature_value("chamber"),
-        exists_fn=_temperature_exists("chamber"),
+        value_fn=_temperature_value("chamber", "chamber_temperature", "chamber_temp"),
+        exists_fn=_temperature_exists("chamber", "chamber_temperature", "chamber_temp"),
     ),
     PrintbuddySensorDescription(
         key="progress",

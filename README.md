@@ -6,7 +6,7 @@
 
 Custom Home Assistant integration for [Printbuddy](https://github.com/vmhomelab/Printbuddy).
 
-It connects to a Printbuddy instance and exposes every configured Printbuddy printer as its own Home Assistant device with status, temperature, progress, fan, network, and print-job sensors.
+It connects to a Printbuddy instance and exposes every configured Printbuddy printer as its own Home Assistant device with status, nozzle/bed/chamber temperatures, progress, fan, network, print-job sensors, and a camera entity when Printbuddy has either a native printer camera or an assigned external camera.
 
 ## Features
 
@@ -14,6 +14,7 @@ It connects to a Printbuddy instance and exposes every configured Printbuddy pri
 - One Home Assistant device per Printbuddy printer.
 - Discovers printers from `GET /api/v1/printers/`.
 - Polls each printer via `GET /api/v1/printers/{id}/status`.
+- Exposes Printbuddy camera streams through `GET /api/v1/printers/{id}/camera/stream` using Printbuddy stream tokens.
 - Supports unauthenticated Printbuddy instances and Bearer/API-token protected instances.
 - Creates stable entity unique IDs from the Printbuddy instance URL and printer ID.
 
@@ -37,6 +38,7 @@ For each printer the integration can create:
 - Total layers sensor
 - Wi-Fi signal sensor
 - Fan speed sensors for part cooling, auxiliary, chamber/exhaust, and heatbreak fans, when reported
+- Camera entity when Printbuddy reports a native camera or an assigned external camera for the printer
 
 ## Installation
 

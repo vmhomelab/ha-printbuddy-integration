@@ -5,7 +5,9 @@ from __future__ import annotations
 import pytest
 from aiohttp import ClientSession, web
 
-from custom_components.printbuddy.api import PrintbuddyAuthError, PrintbuddyClient
+from custom_components.printbuddy.api import PrintbuddyApiError, PrintbuddyAuthError, PrintbuddyClient
+
+CAMERA_TOKEN = "camera-token-123"
 
 
 async def _start_server(app: web.Application) -> tuple[web.AppRunner, str]:
@@ -67,6 +69,72 @@ async def test_get_printers_and_status() -> None:
     assert printers_result[0].provider == "fluidd"
     assert status_result.connected is True
     assert status_result.raw["temperatures"]["nozzle"] == 215
+
+
+@pytest.mark.asyncio
+async def test_printer_camera_configuration_and_stream_token() -> None:
+    """The client exposes Printbuddy camera metadata and builds tokenized stream URLs."""
+    app = web.Application()
+    seen_auth_headers: list[str | None] = []
+
+    async def printers(request: web.Request) -> web.Response:
+        seen_auth_headers.append(request.headers.get("Authorization"))
+        return web.json_response(
+            [
+                {
+                    "id": 7,
+                    "name": "P1S",
+                    "provider": "bambu",
+                    "model": "P1S",
+                    "external_camera_enabled": True,
+                    "external_camera_url": "http://cam.local/stream",
+                    "external_camera_type": "mjpeg",
+                    "ipcam": True,
+                }
+            ]
+        )
+
+    async def stream_token(request: web.Request) -> web.Response:
+        seen_auth_headers.append(request.headers.get("Authorization"))
+        return web.json_response({"token": CAMERA_TOKEN})
+
+    app.router.add_get("/api/v1/printers/", printers)
+    app.router.add_post("/api/v1/printers/camera/stream-token", stream_token)
+    runner, url = await _start_server(app)
+    try:
+        async with ClientSession() as session:
+            client = PrintbuddyClient(session, url, "api-token")
+            printers_result = await client.async_get_printers()
+            token = await client.async_create_camera_stream_token()
+    finally:
+        await runner.cleanup()
+
+    printer = printers_result[0]
+    assert printer.has_camera is True
+    assert printer.external_camera_enabled is True
+    assert printer.external_camera_type == "mjpeg"
+    assert token == CAMERA_TOKEN
+    assert client.camera_stream_url(printer.id, token) == f"{url}/api/v1/printers/7/camera/stream?token={CAMERA_TOKEN}"
+    assert seen_auth_headers == ["Bearer api-token", "Bearer api-token"]
+
+
+@pytest.mark.asyncio
+async def test_missing_camera_stream_token_is_api_error() -> None:
+    """Malformed camera token responses raise a client API error instead of producing broken URLs."""
+    app = web.Application()
+
+    async def stream_token(_: web.Request) -> web.Response:
+        return web.json_response({"unexpected": "shape"})
+
+    app.router.add_post("/api/v1/printers/camera/stream-token", stream_token)
+    runner, url = await _start_server(app)
+    try:
+        async with ClientSession() as session:
+            client = PrintbuddyClient(session, url)
+            with pytest.raises(PrintbuddyApiError, match="camera stream token"):
+                await client.async_create_camera_stream_token()
+    finally:
+        await runner.cleanup()
 
 
 @pytest.mark.asyncio
