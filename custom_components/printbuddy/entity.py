@@ -11,6 +11,34 @@ from .const import ATTRIBUTION, DOMAIN
 from .coordinator import PrintbuddyCoordinator
 
 
+def coordinator_instance_id(coordinator: PrintbuddyCoordinator) -> str:
+    """Return the stable instance device identifier suffix."""
+    return coordinator.client.instance_id
+
+
+class PrintbuddyInstanceEntity(CoordinatorEntity[PrintbuddyCoordinator]):
+    """Base class for Printbuddy instance-level entities."""
+
+    _attr_attribution = ATTRIBUTION
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: PrintbuddyCoordinator, key: str) -> None:
+        """Initialize an instance-level entity."""
+        super().__init__(coordinator)
+        self.entity_key = key
+        self._attr_unique_id = f"{coordinator.client.instance_id}_{key}"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return Home Assistant device info for the Printbuddy instance."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, coordinator_instance_id(self.coordinator))},
+            name="Printbuddy",
+            manufacturer="Printbuddy",
+            configuration_url=self.coordinator.client.base_url,
+        )
+
+
 class PrintbuddyEntity(CoordinatorEntity[PrintbuddyCoordinator]):
     """Base class for Printbuddy entities."""
 

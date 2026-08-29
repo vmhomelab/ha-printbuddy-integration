@@ -156,6 +156,91 @@ async def test_auth_error() -> None:
         await runner.cleanup()
 
 
+@pytest.mark.asyncio
+async def test_camera_token_and_url_builders() -> None:
+    """The client creates tokenized camera stream and snapshot URLs."""
+    app = web.Application()
+    seen_auth: list[str | None] = []
+
+    async def stream_token(request: web.Request) -> web.Response:
+        seen_auth.append(request.headers.get("Authorization"))
+        return web.json_response({"token": "token with spaces"})
+
+    async def snapshot(request: web.Request) -> web.Response:
+        assert request.query["token"] == "token with spaces"
+        return web.Response(body=b"jpeg-bytes", content_type="image/jpeg")
+
+    app.router.add_post("/api/v1/printers/camera/stream-token", stream_token)
+    app.router.add_get("/api/v1/printers/7/camera/snapshot", snapshot)
+    runner, url = await _start_server(app)
+    try:
+        async with ClientSession() as session:
+            client = PrintbuddyClient(session, url, "secret-token")
+            stream_url = await client.async_get_camera_stream_url(7, fps=5)
+            snapshot_url = await client.async_get_camera_snapshot_url(7)
+            snapshot_bytes = await client.async_get_camera_snapshot(7)
+    finally:
+        await runner.cleanup()
+
+    assert seen_auth == ["Bearer secret-token", "Bearer secret-token", "Bearer secret-token"]
+    assert stream_url == f"{url}/api/v1/printers/7/camera/stream?fps=5&token=token+with+spaces"
+    assert snapshot_url == f"{url}/api/v1/printers/7/camera/snapshot?token=token+with+spaces"
+    assert snapshot_bytes == b"jpeg-bytes"
+
+
+@pytest.mark.asyncio
+async def test_optional_service_status_endpoints() -> None:
+    """The client fetches Printbuddy service status endpoints used by HA entities."""
+    app = web.Application()
+
+    async def panda_breath(_: web.Request) -> web.Response:
+        return web.json_response({"enabled": True, "devices": {"dev1": {"chamber_actual": 42}}})
+
+    async def obico(_: web.Request) -> web.Response:
+        return web.json_response({"enabled": True, "is_running": True, "per_printer": {"1": {"class": "safe"}}})
+
+    async def mqtt(_: web.Request) -> web.Response:
+        return web.json_response({"enabled": True, "connected": True})
+
+    app.router.add_get("/api/v1/settings/panda-breath/status", panda_breath)
+    app.router.add_get("/api/v1/obico/status", obico)
+    app.router.add_get("/api/v1/settings/mqtt/status", mqtt)
+    runner, url = await _start_server(app)
+    try:
+        async with ClientSession() as session:
+            client = PrintbuddyClient(session, url)
+            panda_result = await client.async_get_panda_breath_status()
+            obico_result = await client.async_get_obico_status()
+            mqtt_result = await client.async_get_mqtt_status()
+    finally:
+        await runner.cleanup()
+
+    assert panda_result["devices"]["dev1"]["chamber_actual"] == 42
+    assert obico_result["per_printer"]["1"]["class"] == "safe"
+    assert mqtt_result["connected"] is True
+
+
+@pytest.mark.asyncio
+async def test_service_status_endpoint_must_return_object() -> None:
+    """Non-object service status responses are treated as API errors."""
+    from custom_components.printbuddy.api import PrintbuddyApiError
+
+    app = web.Application()
+
+    async def not_an_object(_: web.Request) -> web.Response:
+        return web.json_response([])
+
+    app.router.add_get("/api/v1/obico/status", not_an_object)
+    runner, url = await _start_server(app)
+    try:
+        async with ClientSession() as session:
+            client = PrintbuddyClient(session, url)
+            with pytest.raises(PrintbuddyApiError):
+                await client.async_get_obico_status()
+    finally:
+        await runner.cleanup()
+
+
 def test_normalize_url() -> None:
     """Bare hostnames are normalized to HTTP URLs."""
     assert PrintbuddyClient.normalize_url("printbuddy.local:8000/") == "http://printbuddy.local:8000"

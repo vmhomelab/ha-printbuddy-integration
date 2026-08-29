@@ -50,9 +50,27 @@ class PrintbuddyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         connected=False,
                         raw={"id": printer.id, "name": printer.name, "connected": False},
                     )
+            mqtt_status: dict[str, Any] = {}
+            panda_breath_status: dict[str, Any] = {}
+            obico_status: dict[str, Any] = {}
+            try:
+                mqtt_status = await self.client.async_get_mqtt_status()
+            except PrintbuddyError as err:
+                self.logger.debug("Could not update Printbuddy MQTT status: %s", err)
+            try:
+                panda_breath_status = await self.client.async_get_panda_breath_status()
+            except PrintbuddyError as err:
+                self.logger.debug("Could not update Printbuddy Panda Breath status: %s", err)
+            try:
+                obico_status = await self.client.async_get_obico_status()
+            except PrintbuddyError as err:
+                self.logger.debug("Could not update Printbuddy Obico status: %s", err)
             return {
                 "printers": {printer.id: printer for printer in printers},
                 "statuses": statuses,
+                "mqtt": mqtt_status,
+                "panda_breath": panda_breath_status,
+                "obico": obico_status,
             }
         except PrintbuddyError as err:
             raise UpdateFailed(str(err)) from err
