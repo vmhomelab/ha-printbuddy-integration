@@ -6,7 +6,7 @@
 
 Custom Home Assistant integration for [Printbuddy](https://github.com/vmhomelab/Printbuddy).
 
-It connects to a Printbuddy instance and exposes every configured Printbuddy printer as its own Home Assistant device with status, nozzle/bed/chamber temperatures, progress, fan, network, print-job sensors, and a camera entity when Printbuddy has either a native printer camera or an assigned external camera.
+It connects to a Printbuddy instance and exposes every configured Printbuddy printer as its own Home Assistant device with status, nozzle/bed/chamber temperatures, progress, fan, network, print-job sensors, loaded-spool telemetry, AMS/filament details, HMS/problem state, Obico AI detection state, Panda Breath telemetry, and a camera entity when Printbuddy has either a native printer camera or an assigned external camera.
 
 ## Features
 
@@ -14,9 +14,11 @@ It connects to a Printbuddy instance and exposes every configured Printbuddy pri
 - One Home Assistant device per Printbuddy printer.
 - Discovers printers from `GET /api/v1/printers/`.
 - Polls each printer via `GET /api/v1/printers/{id}/status`.
+- Polls optional Printbuddy service health from MQTT relay, Panda Breath, and Obico status endpoints.
 - Exposes Printbuddy camera streams through `GET /api/v1/printers/{id}/camera/stream` using Printbuddy stream tokens.
 - Supports unauthenticated Printbuddy instances and Bearer/API-token protected instances.
 - Creates stable entity unique IDs from the Printbuddy instance URL and printer ID.
+- Creates camera entities for printers with a native Printbuddy camera or an assigned external camera.
 
 ## Entities
 
@@ -27,18 +29,31 @@ For each printer the integration can create:
 - Chamber light binary sensor, when supported
 - Printing status sensor
 - Current print sensor
+- Loaded spool / currently loaded filament sensor, when Printbuddy reports virtual-tray or AMS loaded-slot data
 - Nozzle temperature sensor
 - Nozzle target temperature sensor
+- Right nozzle temperature and target sensors, when reported
 - Bed temperature sensor
 - Bed target temperature sensor
-- Chamber temperature sensor, when reported
+- Chamber temperature and target sensors, when reported
 - Print progress sensor
 - Remaining time sensor
 - Current layer sensor
 - Total layers sensor
 - Wi-Fi signal sensor
 - Fan speed sensors for part cooling, auxiliary, chamber/exhaust, and heatbreak fans, when reported
+- HMS error count, highest severity, last error, and problem binary sensors
+- Firmware version, stage, speed level, airduct mode, current plate/archive, printable objects, active extruder, nozzle rack, and FilaSwitch telemetry when reported
+- AMS unit, tray, slot, humidity, temperature, drying, firmware, serial, material, and loaded/empty telemetry when reported
+- Obico/AI class, score, frame count, warning, and failure sensors when Printbuddy reports per-printer AI detection data
 - Camera entity when Printbuddy reports a native camera or an assigned external camera for the printer
+
+For the Printbuddy instance the integration can create:
+
+- MQTT relay connection binary sensor
+- Obico enabled/running binary sensors and configuration/status sensors
+- Panda Breath bridge connection binary sensor
+- Panda Breath device sensors for chamber/bed/filter/heater/drying/slicer temperatures, mode, drying state, firmware, bound printer, and availability/power/fan/working flags
 
 ## Installation
 
@@ -63,7 +78,7 @@ The setup flow asks for:
 
 ## Notes
 
-This integration is read-only in the first version. It intentionally does not expose printer control buttons yet. That keeps the initial release safe and focused on reliable telemetry.
+This integration is read-only in the first version. It intentionally does not expose printer or Panda Breath control buttons yet. That keeps the initial release safe and focused on reliable telemetry.
 
 ## Development
 

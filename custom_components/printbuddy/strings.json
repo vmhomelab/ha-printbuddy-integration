@@ -32,36 +32,328 @@
   },
   "entity": {
     "sensor": {
-      "status": { "name": "Status" },
-      "current_print": { "name": "Current print" },
-      "nozzle_temperature": { "name": "Nozzle current temperature" },
-      "nozzle_target_temperature": { "name": "Nozzle target temperature" },
-      "right_nozzle_temperature": { "name": "Right nozzle current temperature" },
-      "right_nozzle_target_temperature": { "name": "Right nozzle target temperature" },
-      "bed_temperature": { "name": "Bed current temperature" },
-      "bed_target_temperature": { "name": "Bed target temperature" },
-      "chamber_temperature": { "name": "Chamber current temperature" },
-      "chamber_target_temperature": { "name": "Chamber target temperature" },
-      "progress": { "name": "Progress" },
-      "remaining_time": { "name": "Remaining time" },
-      "current_layer": { "name": "Current layer" },
-      "total_layers": { "name": "Total layers" },
-      "wifi_signal": { "name": "Wi-Fi signal" },
-      "cooling_fan_speed": { "name": "Part cooling fan" },
-      "auxiliary_fan_speed": { "name": "Auxiliary fan" },
-      "chamber_fan_speed": { "name": "Chamber fan" },
-      "heatbreak_fan_speed": { "name": "Heatbreak fan" }
+      "status": {
+        "name": "Status"
+      },
+      "current_print": {
+        "name": "Current print"
+      },
+      "loaded_spool": {
+        "name": "Loaded spool"
+      },
+      "nozzle_temperature": {
+        "name": "Nozzle current temperature"
+      },
+      "nozzle_target_temperature": {
+        "name": "Nozzle target temperature"
+      },
+      "right_nozzle_temperature": {
+        "name": "Right nozzle current temperature"
+      },
+      "right_nozzle_target_temperature": {
+        "name": "Right nozzle target temperature"
+      },
+      "bed_temperature": {
+        "name": "Bed current temperature"
+      },
+      "bed_target_temperature": {
+        "name": "Bed target temperature"
+      },
+      "chamber_temperature": {
+        "name": "Chamber current temperature"
+      },
+      "chamber_target_temperature": {
+        "name": "Chamber target temperature"
+      },
+      "progress": {
+        "name": "Progress"
+      },
+      "remaining_time": {
+        "name": "Remaining time"
+      },
+      "current_layer": {
+        "name": "Current layer"
+      },
+      "total_layers": {
+        "name": "Total layers"
+      },
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      },
+      "cooling_fan_speed": {
+        "name": "Part cooling fan"
+      },
+      "auxiliary_fan_speed": {
+        "name": "Auxiliary fan"
+      },
+      "chamber_fan_speed": {
+        "name": "Chamber fan"
+      },
+      "heatbreak_fan_speed": {
+        "name": "Heatbreak fan"
+      },
+      "hms_error_count": {
+        "name": "HMS error count"
+      },
+      "highest_hms_severity": {
+        "name": "Highest HMS severity"
+      },
+      "last_hms_error": {
+        "name": "Last HMS error"
+      },
+      "firmware_version": {
+        "name": "Firmware version"
+      },
+      "stage": {
+        "name": "Print stage"
+      },
+      "stage_code": {
+        "name": "Print stage code"
+      },
+      "speed_level": {
+        "name": "Speed level"
+      },
+      "airduct_mode": {
+        "name": "Airduct mode"
+      },
+      "current_plate": {
+        "name": "Current plate"
+      },
+      "current_archive_id": {
+        "name": "Current archive ID"
+      },
+      "printable_objects_count": {
+        "name": "Printable objects"
+      },
+      "active_extruder": {
+        "name": "Active extruder"
+      },
+      "left_nozzle_type": {
+        "name": "Left nozzle type"
+      },
+      "left_nozzle_diameter": {
+        "name": "Left nozzle diameter"
+      },
+      "right_nozzle_type": {
+        "name": "Right nozzle type"
+      },
+      "right_nozzle_diameter": {
+        "name": "Right nozzle diameter"
+      },
+      "nozzle_rack_summary": {
+        "name": "Nozzle rack count"
+      },
+      "fila_switch_status": {
+        "name": "FilaSwitch status"
+      },
+      "ams_status_main": {
+        "name": "AMS main status"
+      },
+      "ams_status_sub": {
+        "name": "AMS sub status"
+      },
+      "filament_change_stage": {
+        "name": "Filament change stage"
+      },
+      "last_ams_update": {
+        "name": "Last AMS update"
+      },
+      "active_tray": {
+        "name": "Active tray"
+      },
+      "ams_slot": {
+        "name": "AMS slot"
+      },
+      "ams_humidity": {
+        "name": "AMS humidity"
+      },
+      "ams_temp": {
+        "name": "AMS temperature"
+      },
+      "ams_dry_time": {
+        "name": "AMS drying remaining"
+      },
+      "ams_sw_ver": {
+        "name": "AMS firmware version"
+      },
+      "ams_serial_number": {
+        "name": "AMS serial number"
+      },
+      "ams_module_type": {
+        "name": "AMS module type"
+      },
+      "ai_detection_class": {
+        "name": "AI detection class"
+      },
+      "ai_failure_score": {
+        "name": "AI failure score"
+      },
+      "ai_frame_count": {
+        "name": "AI frame count"
+      },
+      "obico_sensitivity": {
+        "name": "Obico sensitivity"
+      },
+      "obico_action": {
+        "name": "Obico action"
+      },
+      "obico_poll_interval": {
+        "name": "Obico poll interval"
+      },
+      "obico_last_error": {
+        "name": "Obico last error"
+      },
+      "obico_low_threshold": {
+        "name": "Obico low threshold"
+      },
+      "obico_high_threshold": {
+        "name": "Obico high threshold"
+      },
+      "panda_breath_chamber_temperature": {
+        "name": "Panda Breath chamber temperature"
+      },
+      "panda_breath_target_temperature": {
+        "name": "Panda Breath target temperature"
+      },
+      "panda_breath_bed_temperature": {
+        "name": "Panda Breath bed temperature"
+      },
+      "panda_breath_bed_limit": {
+        "name": "Panda Breath bed limit"
+      },
+      "panda_breath_filter_activation_temperature": {
+        "name": "Panda Breath filter activation temperature"
+      },
+      "panda_breath_heater_trigger_temperature": {
+        "name": "Panda Breath heater trigger temperature"
+      },
+      "panda_breath_custom_temperature": {
+        "name": "Panda Breath custom temperature"
+      },
+      "panda_breath_drying_temperature": {
+        "name": "Panda Breath drying temperature"
+      },
+      "panda_breath_drying_remaining": {
+        "name": "Panda Breath drying remaining"
+      },
+      "panda_breath_drying_time": {
+        "name": "Panda Breath drying time"
+      },
+      "panda_breath_slicer_target_temperature": {
+        "name": "Panda Breath slicer target temperature"
+      },
+      "panda_breath_mode": {
+        "name": "Panda Breath mode"
+      },
+      "panda_breath_filament_drying_mode": {
+        "name": "Panda Breath filament drying mode"
+      },
+      "panda_breath_status": {
+        "name": "Panda Breath status"
+      },
+      "panda_breath_lock_status": {
+        "name": "Panda Breath lock status"
+      },
+      "panda_breath_firmware_version": {
+        "name": "Panda Breath firmware version"
+      },
+      "panda_breath_bound_printer": {
+        "name": "Panda Breath bound printer"
+      },
+      "panda_breath_last_seen": {
+        "name": "Panda Breath last seen"
+      }
     },
     "binary_sensor": {
-      "connected": { "name": "Connected" },
-      "door_open": { "name": "Door open" },
-      "chamber_light": { "name": "Chamber light" },
-      "sdcard": { "name": "SD card" },
-      "timelapse": { "name": "Timelapse" },
-      "awaiting_plate_clear": { "name": "Awaiting plate clear" }
+      "connected": {
+        "name": "Connected"
+      },
+      "door_open": {
+        "name": "Door open"
+      },
+      "chamber_light": {
+        "name": "Chamber light"
+      },
+      "sdcard": {
+        "name": "SD card"
+      },
+      "store_to_sdcard": {
+        "name": "Store to SD card"
+      },
+      "timelapse": {
+        "name": "Timelapse"
+      },
+      "camera_live_view_enabled": {
+        "name": "Camera live view"
+      },
+      "awaiting_plate_clear": {
+        "name": "Awaiting plate clear"
+      },
+      "has_error": {
+        "name": "Has error"
+      },
+      "developer_lan_mode": {
+        "name": "Developer LAN mode"
+      },
+      "wired_network": {
+        "name": "Wired network"
+      },
+      "supports_drying": {
+        "name": "Supports drying"
+      },
+      "fila_switch_installed": {
+        "name": "FilaSwitch installed"
+      },
+      "ams_exists": {
+        "name": "AMS present"
+      },
+      "mqtt_relay_connected": {
+        "name": "MQTT relay connected"
+      },
+      "obico_enabled": {
+        "name": "Obico enabled"
+      },
+      "obico_service_running": {
+        "name": "Obico service running"
+      },
+      "panda_breath_bridge_connected": {
+        "name": "Panda Breath bridge connected"
+      },
+      "ai_failure_detected": {
+        "name": "AI failure detected"
+      },
+      "ai_warning_detected": {
+        "name": "AI warning detected"
+      },
+      "ams_slot_empty": {
+        "name": "AMS slot empty"
+      },
+      "ams_slot_loaded": {
+        "name": "AMS slot loaded"
+      },
+      "panda_breath_available": {
+        "name": "Panda Breath available"
+      },
+      "panda_breath_fan": {
+        "name": "Panda Breath fan"
+      },
+      "panda_breath_power": {
+        "name": "Panda Breath power"
+      },
+      "panda_breath_working": {
+        "name": "Panda Breath working"
+      },
+      "panda_breath_drying_running": {
+        "name": "Panda Breath drying running"
+      },
+      "panda_breath_slicer_priority_mode": {
+        "name": "Panda Breath slicer priority mode"
+      }
     },
     "camera": {
-      "camera": { "name": "Camera" }
+      "camera": {
+        "name": "Camera"
+      }
     }
   }
 }
